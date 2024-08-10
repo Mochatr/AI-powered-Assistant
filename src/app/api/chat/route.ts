@@ -1,9 +1,9 @@
 import {NextResponse} from 'next/server';
 import OpenAI from 'openai';
 
-const systemPrompt = "What's 2+2?"
+const systemPrompt = "You are an assistant for 'The Headstarter' and you need to answer questions that the users of the website ask. The headstarter platform is like amazon an ecommerce platform. Give out only information you know and don't make anything up. The questions can be about delivery and the likes."
 
-export async function POST(req) {
+export async function POST(req: Request): Promise<NextResponse> {
     const openai = new OpenAI({
         baseURL: "https://openrouter.ai/api/v1",
         apiKey: `${process.env.NEXT_PUBLIC_OPENROUTER_API_KEY}`,
@@ -22,21 +22,21 @@ export async function POST(req) {
         stream: true,
       })
 
-      const stream = new ReadableStream({
+      const stream = new ReadableStream<string>({
         async start(controller) {
           const encoder = new TextEncoder()
           try {
             for await (const chunk of completion) {
               const content = chunk.choices[0]?.delta?.content
               if (content) {
-                const text = encoder.encode(content)
-                controller.enqueue(text)
+                // const text = encoder.encode(content)
+                controller.enqueue(content)
               }
             }
           } catch (err) {
-            controller.error(err) // Handle any errors that occur during streaming
+            controller.error(err)
           } finally {
-            controller.close() // Close the stream when done
+            controller.close()
           }
         },
       })

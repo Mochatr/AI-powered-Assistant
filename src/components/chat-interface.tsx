@@ -1,55 +1,94 @@
 'use client'
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import OpenAI from "openai";
 import { Box, Button, Stack, TextField } from '@mui/material';
 
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 const ChatInterface = () => {
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
       content: "Hi! I'm the Headstarter support assistant. How can I help you today?",
     },
   ])
-  const [message, setMessage] = useState('')
+  const [message, setMessage] = useState<string>('')
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
   
   const sendMessage = async () => {
-    setMessage('')  // Clear the input field
-  setMessages((messages) => [
-    ...messages,
-    { role: 'user', content: message },  // Add the user's message to the chat
-    { role: 'assistant', content: '' },  // Add a placeholder for the assistant's response
-  ])
-
-  // Send the message to the server
-  const response = fetch('/api/chat', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify([...messages, { role: 'user', content: message }]),
-    }).then(async (res) => {
-    const reader = res.body.getReader()  // Get a reader to read the response body
-    const decoder = new TextDecoder()  // Create a decoder to decode the response text
-
-    let result = ''
-    // Function to process the text from the response
-    return reader.read().then(function processText({ done, value }) {
-      if (done) {
-        return result
-      }
-      const text = decoder.decode(value || new Uint8Array(), { stream: true })  // Decode the text
-      setMessages((messages) => {
-        let lastMessage = messages[messages.length - 1]  // Get the last message (assistant's placeholder)
-        let otherMessages = messages.slice(0, messages.length - 1)  // Get all other messages
-        return [
-          ...otherMessages,
-          { ...lastMessage, content: lastMessage.content + text },  // Append the decoded text to the assistant's message
-        ]
+    if (!message.trim() || isLoading) return;
+    setIsLoading(true)
+  
+    setMessage('')
+    setMessages((messages) => [
+      ...messages,
+      { role: 'user', content: message },
+      { role: 'assistant', content: '' },
+    ])
+  
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify([...messages, { role: 'user', content: message }]),
       })
-      return reader.read().then(processText)  // Continue reading the next chunk of the response
-    })
-    })
+  
+      if (!response.ok) {
+        throw new Error('Network response was not ok')
+      }
+  
+      const reader = response.body?.getReader()
+      if (!reader) {
+        throw new Error('Response body reader is not available')
+      }
+      const decoder = new TextDecoder()
+  
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        const text = decoder.decode(value, { stream: true })
+        setMessages((messages) => {
+          let lastMessage = messages[messages.length - 1]
+          let otherMessages = messages.slice(0, messages.length - 1)
+          return [
+            ...otherMessages,
+            { ...lastMessage, content: lastMessage.content + text },
+          ]
+        })
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      setMessages((messages) => [
+        ...messages,
+        { role: 'assistant', content: "I'm sorry, but I encountered an error. Please try again later." },
+      ])
+    }
+    setIsLoading(false)
   }
+
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  useEffect(() => {
+    const scrollToBottom = () => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    };
+    
+    if (messages.length > 1) {
+      scrollToBottom();
+    }
+  }, [messages])
 
   return (
     <Box
@@ -82,6 +121,7 @@ const ChatInterface = () => {
               justifyContent={
                 message.role === 'assistant' ? 'flex-start' : 'flex-end'
               }
+              ref={index === messages.length - 1 ? messagesEndRef : null}
             >
               <Box
                 bgcolor={
@@ -98,17 +138,23 @@ const ChatInterface = () => {
             </Box>
           ))}
         </Stack>
-        <Stack direction={'row'} spacing={2}>
-          <TextField
-            label="Message"
-            fullWidth
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-          />
-          <Button variant="contained" onClick={sendMessage}>
-            Send
-          </Button>
-        </Stack>
+        <div ref={messagesEndRef} />
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          sendMessage();
+        }}>
+          <Stack direction={'row'} spacing={2}>
+            <TextField
+              label="Message"
+              fullWidth
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+            />
+            <Button variant="contained" onClick={sendMessage}>
+              Send
+            </Button>
+          </Stack>
+        </form>
       </Stack>
     </Box>
   )
