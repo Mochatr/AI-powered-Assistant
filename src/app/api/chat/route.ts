@@ -1,7 +1,7 @@
 import {NextResponse} from 'next/server';
 import OpenAI from 'openai';
 
-const systemPrompt = "You are an assistant for 'The Headstarter' and you need to answer questions that the users of the website ask. The headstarter platform is like amazon an ecommerce platform. Give out only information you know and don't make anything up. The questions can be about delivery and the likes."
+const systemPrompt = "You are an assistant for 'The Headstarter' and you need to answer questions that the users of the website ask. Give out only information you know and don't make anything up. Ensure that all answers to my questions come from reputable sources."
 
 export async function POST(req: Request): Promise<NextResponse> {
     const openai = new OpenAI({
