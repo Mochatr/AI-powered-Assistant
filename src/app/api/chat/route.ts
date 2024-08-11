@@ -1,7 +1,7 @@
 import {NextResponse} from 'next/server';
 import OpenAI from 'openai';
 
-const systemPrompt = "You are an assistant for 'The Headstarter' and you need to answer questions that the users of the website ask. Give out only information you know and don't make anything up. Ensure that all answers to my questions come from reputable sources."
+const systemPrompt = "I’m designed to assist with a wide range of questions and tasks. If you have a specific scenario or type of interaction in mind, let me know, and I can adjust my approach accordingly."
 
 export async function POST(req: Request): Promise<NextResponse> {
     const openai = new OpenAI({
@@ -11,7 +11,7 @@ export async function POST(req: Request): Promise<NextResponse> {
           "HTTP-Referer": `${process.env.NEXT_PUBLIC_SITE_URL}`,
           "X-Title": `${process.env.NEXT_PUBLIC_SITE_NAME}`,
         }
-      })
+      }) 
     const data = await req.json()
 
     const completion = await openai.chat.completions.create({
