@@ -8,8 +8,8 @@ const firebaseConfig = {
   authDomain: `${process.env.NEXT_PUBLIC_FIREBASE_AUTHDOMAIN}`,
   projectId: "ai-chatbot-1f9c3",
   storageBucket: "ai-chatbot-1f9c3.appspot.com",
-  messagingSenderId: `${process.env.NEXT_FIREBASE_MESSAGING_SENDER_ID}`,
-  appId: `${process.env.NEXT_FIREBASE_APP_ID}`,
+  messagingSenderId: `${process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID}`,
+  appId: `${process.env.NEXT_PUBLIC_FIREBASE_APP_ID}`,
   measurementId: `${process.env.NEXT_PUBLIC_MEASUREMENT_ID}`
 };
 
