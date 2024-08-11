@@ -1,7 +1,8 @@
 'use client'
 import { useState, useEffect, useRef } from 'react';
 import OpenAI from "openai";
-import { Box, Button, Stack, TextField } from '@mui/material';
+import { Box, Button, Stack, TextField, Typography } from '@mui/material';
+import { UserAuth } from '../context/AuthContext';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -18,6 +19,7 @@ const ChatInterface = () => {
   const [message, setMessage] = useState<string>('')
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const { user } = UserAuth()
   
   const sendMessage = async () => {
     if (!message.trim() || isLoading) return;
@@ -89,6 +91,21 @@ const ChatInterface = () => {
       scrollToBottom();
     }
   }, [messages])
+
+  if (!user) {
+    return <Box
+    width="100%"
+    height="100%"
+    display={'flex'}
+    justifyContent={'center'}
+    flexDirection={'column'}
+    alignItems={'center'}
+    >
+    <div className="bg-violet-600 text-white w-[500px] h-[300px] flex justify-center items-center mt-[150px] rounded-2xl">
+      <Typography variant="h6">Please log in to access chatbot.</Typography>
+    </div>
+  </Box>;
+  }
 
   return (
     <Box

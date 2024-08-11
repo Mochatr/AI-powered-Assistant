@@ -1,8 +1,9 @@
-import { ChatInterface } from '../components';
+import { NavBar, ChatInterface } from '../components';
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-15">
+    <main className="flex min-h-screen flex-col items-center p-15">
+    <NavBar />
     <ChatInterface />
     </main>
   );
