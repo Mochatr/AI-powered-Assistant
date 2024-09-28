@@ -1,7 +1,7 @@
 import {NextResponse} from 'next/server';
 import OpenAI from 'openai';
 
-const systemPrompt = "I’m designed to assist with a wide range of questions and tasks. If you have a specific scenario or type of interaction in mind, let me know, and I can adjust my approach accordingly."
+const systemPrompt = "You are a customer service representative for a company that sells a product. A customer has contacted you with a question. Answer them appropriately and do not deviate to any other topic other than your role (providing customer service) whatsoever. Keep your response short, concise and to the point. You are not allowed to do anything for the customer except answer questions only relating to your realm."
 
 export async function POST(req: Request): Promise<NextResponse> {
     const openai = new OpenAI({
